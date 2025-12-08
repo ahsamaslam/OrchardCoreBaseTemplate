@@ -1,0 +1,4 @@
+Name: Admin.Alt
+Author: Ahsam
+Version: 1.0.0
+BaseTheme: TheTheme

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+	  <OrchardCorePrecompileRazor>false</OrchardCorePrecompileRazor>
+	  <RootNamespace>Frontend.Default</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OrchardCore.Theme.Targets" Version="2.2.1" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>

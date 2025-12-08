@@ -1,0 +1,4 @@
+Name: Settings
+Author: Ahsam
+Version: 1.0.0
+OrchardFeature: Settings

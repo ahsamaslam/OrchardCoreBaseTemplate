@@ -1,0 +1,4 @@
+Name: ExternalAuth.AzureAD
+Author: Ahsam
+Version: 1.0.0
+OrchardFeature: ExternalAuth.AzureAD

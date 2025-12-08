@@ -1,0 +1,4 @@
+Name: RedisCache
+Author: Ahsam
+Version: 1.0.0
+OrchardFeature: RedisCache

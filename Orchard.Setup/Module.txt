@@ -1,0 +1,6 @@
+﻿Name: Orchard.Setup
+Author: YourCompany
+Version: 1.0.0
+Description: Setup module providing first-run configuration and recipe execution.
+Category: Infrastructure
+Dependencies: OrchardCore.Recipes

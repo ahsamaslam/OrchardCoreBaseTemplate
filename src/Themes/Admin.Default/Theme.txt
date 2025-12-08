@@ -1,0 +1,4 @@
+Name: Admin.Default
+Author: Ahsam
+Version: 1.0.0
+BaseTheme: TheTheme

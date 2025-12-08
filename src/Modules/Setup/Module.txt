@@ -1,0 +1,4 @@
+Name: Setup
+Author: Ahsam
+Version: 1.0.0
+OrchardFeature: Setup
