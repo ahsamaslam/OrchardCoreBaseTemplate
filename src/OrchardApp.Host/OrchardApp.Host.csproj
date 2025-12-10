@@ -1,7 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>OrchardApp.Host</RootNamespace>
@@ -9,8 +9,15 @@
 
   <ItemGroup>
     <!-- Orchard Core CMS starter package (nuget restore required) -->
-    <PackageReference Include="OrchardCore.Application.Cms.Targets" Version="2.2.1" PrivateAssets="all" />
+    <PackageReference Include="FluentMigrator.Runner" Version="7.2.0" />
     <PackageReference Include="OrchardCore.Application.Targets" Version="2.2.1" />
+	<PackageReference Include="linq2db" Version="6.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Modules\Orchard.Identity\Orchard.Identity.csproj" />
+    <ProjectReference Include="..\Modules\Orchard.TenantManagement\Orchard.TenantManagement.csproj" />
+    <ProjectReference Include="..\Orchard.ModuleBase\Orchard.ModuleBase.csproj" />
   </ItemGroup>
 
 </Project>

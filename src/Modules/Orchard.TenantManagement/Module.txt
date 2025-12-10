@@ -1,0 +1,6 @@
+Name: Orchard.TenantManagement
+Author: YourCompany
+Version: 1.0.0
+Description: Tenant management UI and programmatic API for creating/enabling/disabling tenants.
+Category: Infrastructure
+Dependencies: OrchardCore.Tenants

@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<IsOrchardModule>true</IsOrchardModule>
+		<RazorCompileOnBuild>false</RazorCompileOnBuild>
+		<RazorCompileOnPublish>false</RazorCompileOnPublish>
+		<OutputType>Library</OutputType>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="linq2db" Version="6.0.0" />
+		<PackageReference Include="linq2db.SqlServer" Version="6.0.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.3.1" />
+		<PackageReference Include="OrchardCore.Module.Targets" Version="2.2.1" />
+		<PackageReference Include="OrchardCore.Abstractions" Version="2.2.1" />
+		<PackageReference Include="FluentMigrator" Version="7.2.0" />
+		<PackageReference Include="FluentMigrator.Runner" Version="7.2.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\Orchard.ModuleBase\Orchard.ModuleBase.csproj" />
+	</ItemGroup>
+</Project>

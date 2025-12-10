@@ -1,0 +1,44 @@
+{
+  "name": "Orchard.Setup.Default",
+  "displayName": "Default Setup Recipe",
+  "description": "Creates the initial host and default tenant, enables admin, and creates admin user.",
+  "tags": [ "setup", "initial" ],
+  "steps": [
+    {
+      "Name": "feature",
+      "FeatureName": "OrchardCore.Mvc.Core",
+      "SkipIfFeatureIsAlreadyEnabled": true
+    },
+    {
+      "Name": "tenant",
+      "shellSettings": {
+        "Name": "Default",
+        "RequestUrlPrefix": "",
+        "State": "Running"
+      }
+    },
+    {
+      "Name": "site",
+      "SiteName": "{{SiteName}}",
+      "SiteTimeZone": "UTC",
+      "AdminUsername": "{{AdminUser}}",
+      "AdminEmail": "{{AdminEmail}}",
+      "AdminPassword": "{{AdminPassword}}",
+      "SiteCulture": "en"
+    },
+    {
+      "Name": "features",
+      "Features": [
+        "OrchardCore.Recipes",
+        "OrchardCore.Settings",
+        "OrchardCore.Users",
+        "OrchardCore.Roles",
+        "OrchardCore.Localization"
+      ]
+    },
+    {
+      "Name": "theme",
+      "Theme": "Frontend.DefaultTheme"
+    }
+  ]
+}

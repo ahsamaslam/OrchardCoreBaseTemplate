@@ -1,0 +1,45 @@
+﻿@model Orchard.Setup.Models.SetupModel
+@{
+    ViewData["Title"] = "Initial Setup";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form asp-action="Index" method="post" class="form">
+    <div class="form-group">
+        <label asp-for="SiteName"></label>
+        <input asp-for="SiteName" class="form-control" />
+        <span asp-validation-for="SiteName" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="AdminUser"></label>
+        <input asp-for="AdminUser" class="form-control" />
+        <span asp-validation-for="AdminUser" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="AdminPassword"></label>
+        <input asp-for="AdminPassword" type="password" class="form-control" />
+        <span asp-validation-for="AdminPassword" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="AdminEmail"></label>
+        <input asp-for="AdminEmail" class="form-control" />
+        <span asp-validation-for="AdminEmail" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="DbConnectionString"></label>
+        <input asp-for="DbConnectionString" class="form-control" />
+        <span asp-validation-for="DbConnectionString" class="text-danger"></span>
+        <small class="form-text text-muted">Optional: the application can ask for DB connection here instead of using host config.</small>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Run Setup</button>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

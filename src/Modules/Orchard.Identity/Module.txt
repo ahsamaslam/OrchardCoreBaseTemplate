@@ -1,0 +1,6 @@
+Name: Orchard.Identity
+Author: YourCompany
+Version: 1.0.0
+Description: Identity module integrating ASP.NET Core Identity with Linq2DB and migrations.
+Category: Infrastructure
+Dependencies: OrchardCore.Users
