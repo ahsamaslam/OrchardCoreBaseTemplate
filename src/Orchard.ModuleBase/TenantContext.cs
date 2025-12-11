@@ -1,4 +1,6 @@
-﻿namespace Orchard.ModuleBase
+﻿using Orchard.ModuleBase.Tenant;
+
+namespace Orchard.ModuleBase
 {
     public class TenantContext : ITenantContext
     {

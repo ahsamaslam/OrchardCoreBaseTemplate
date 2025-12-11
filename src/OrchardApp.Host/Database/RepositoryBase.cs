@@ -1,5 +1,5 @@
 ﻿using LinqToDB.Data;
-using Orchard.ModuleBase;
+using Orchard.ModuleBase.Tenant;
 using System;
 
 namespace OrchardApp.Host.Database

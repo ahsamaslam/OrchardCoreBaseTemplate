@@ -1,11 +1,11 @@
 ﻿// src/Modules/Orchard.Identity/Services/IdentityUserStore.cs
 using Microsoft.AspNetCore.Identity;
-using Orchard.ModuleBase;               // ITenantContext lives here
 using AppIdentityUser = Orchard.Identity.Models.IdentityUser; // alias to avoid IdentityUser collision
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Orchard.ModuleBase.Tenant;
 
 namespace Orchard.Identity.Services
 {

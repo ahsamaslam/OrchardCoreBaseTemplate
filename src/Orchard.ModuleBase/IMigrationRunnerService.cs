@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using Orchard.ModuleBase.Tenant;
+using System.Reflection;
 namespace Orchard.ModuleBase
 {
     public interface IMigrationRunnerService

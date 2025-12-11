@@ -3,6 +3,7 @@ using LinqToDB.Async;
 using LinqToDB.Data;
 using Microsoft.Extensions.Configuration;
 using Orchard.ModuleBase;
+using Orchard.ModuleBase.Tenant;
 using Orchard.TenantManagement.Entities;
 using Orchard.TenantManagement.Models;
 

@@ -1,6 +1,6 @@
 ﻿using LinqToDB.Data;
 using LinqToDB.DataProvider.SqlServer;
-using Orchard.ModuleBase;
+using Orchard.ModuleBase.Tenant;
 
 namespace OrchardApp.Host.Database
 {
@@ -22,7 +22,7 @@ namespace OrchardApp.Host.Database
             // Pick data provider
             var provider = _providerName switch
             {
-                "SqlServer" => SqlServerTools.GetDataProvider(SqlServerVersion.v2016),
+                "SqlServer" => SqlServerTools.GetDataProvider(SqlServerVersion.v2019),
                 "PostgreSQL" => LinqToDB.DataProvider.PostgreSQL.PostgreSQLTools.GetDataProvider(),
                 "MySql" => LinqToDB.DataProvider.MySql.MySqlTools.GetDataProvider(),
                 "SQLite" => LinqToDB.DataProvider.SQLite.SQLiteTools.GetDataProvider(),

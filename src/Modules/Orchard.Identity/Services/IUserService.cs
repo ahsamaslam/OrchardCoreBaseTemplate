@@ -1,6 +1,6 @@
 ﻿// src/Modules/Orchard.Identity/Services/IUserService.cs
 using Orchard.Identity.Models;
-using Orchard.ModuleBase;
+using Orchard.ModuleBase.Tenant;
 using System;
 using System.Threading.Tasks;
 

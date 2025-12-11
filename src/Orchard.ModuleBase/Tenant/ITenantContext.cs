@@ -1,5 +1,4 @@
-﻿
-namespace Orchard.ModuleBase
+﻿namespace Orchard.ModuleBase.Tenant
 {
     public interface ITenantContext
     {

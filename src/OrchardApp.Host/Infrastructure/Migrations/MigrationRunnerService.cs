@@ -1,6 +1,7 @@
 ﻿// Host/Infrastructure/Migrations/MigrationRunnerService.cs
 using FluentMigrator.Runner;
 using Orchard.ModuleBase;
+using Orchard.ModuleBase.Tenant;
 using System.Reflection;
 
 public class MigrationRunnerService : IMigrationRunnerService

@@ -1,5 +1,5 @@
 ﻿// Host/Tenants/InMemoryTenantStore.cs
-using Orchard.ModuleBase;
+using Orchard.ModuleBase.Tenant;
 using System.Collections.Concurrent;
 
 /// <summary>

@@ -1,5 +1,5 @@
 ﻿// Host/Tenants/ITenantStore.cs
-using Orchard.ModuleBase;
+using Orchard.ModuleBase.Tenant;
 
 public interface ITenantStore
 {

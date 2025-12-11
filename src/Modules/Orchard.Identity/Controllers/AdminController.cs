@@ -5,7 +5,8 @@ using System.Threading.Tasks;
 
 namespace Orchard.Identity.Controllers
 {
-    [Area("Orchard.Identity")]
+    [ApiController]
+    [Route("api/Admin")]
     public class AdminController : Controller
     {
         private readonly UserManager<IdentityUser> _userManager;

@@ -3,7 +3,7 @@ using LinqToDB;
 using LinqToDB.Async;
 using LinqToDB.Data;
 using Orchard.Identity.Models;
-using Orchard.ModuleBase;
+using Orchard.ModuleBase.Tenant;
 using System;
 using System.Linq;
 using System.Threading.Tasks;

@@ -1,4 +1,5 @@
 ﻿using Orchard.ModuleBase;
+using Orchard.ModuleBase.Tenant;
 using Orchard.TenantManagement.Services;
 
 namespace OrchardApp.Host.Tenants

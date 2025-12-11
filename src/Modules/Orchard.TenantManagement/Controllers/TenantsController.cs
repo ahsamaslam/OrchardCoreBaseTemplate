@@ -2,12 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Orchard.ModuleBase;
+using Orchard.ModuleBase.Tenant;
 using Orchard.TenantManagement.Models;
 using Orchard.TenantManagement.Services;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
 namespace Orchard.TenantManagement.Controllers
 {
     [ApiController]
@@ -15,27 +12,29 @@ namespace Orchard.TenantManagement.Controllers
     public class TenantsController : ControllerBase
     {
         private readonly ITenantRepository _repo;
-        private readonly IMigrationRunnerService _migrationRunner;
+        private readonly ITenantProvisioningService _provisioning;
+
         //private readonly IRecipeExecutor? _recipeExecutor; // optional: host may or may not provide
         private readonly ILogger<TenantsController> _logger;
 
         public TenantsController(ITenantRepository repo,
-                                 IMigrationRunnerService migrationRunner,
                                  IServiceProvider sp,
+                                 ITenantProvisioningService provisioning,
                                  ILogger<TenantsController> logger)
         {
             _repo = repo;
-            _migrationRunner = migrationRunner;
             _logger = logger;
+            _provisioning = provisioning;
 
             // recipe executor is optional - use service locator to allow module to run without Host recipe system
-           // _recipeExecutor = sp.GetService(typeof(IRecipeExecutor)) as IRecipeExecutor;
+            // _recipeExecutor = sp.GetService(typeof(IRecipeExecutor)) as IRecipeExecutor;
         }
 
         public record CreateTenantDto(string TenantId, string TenantName, string ConnectionString, string Hosts, string? RecipeName);
 
         [HttpPost]
-        public async Task<IActionResult> CreateTenant([FromBody] CreateTenantDto dto)
+        [IgnoreAntiforgeryToken]
+        public async Task<IActionResult> Post([FromBody] CreateTenantDto dto)
         {
             if (string.IsNullOrWhiteSpace(dto.TenantId) || string.IsNullOrWhiteSpace(dto.ConnectionString))
                 return BadRequest("TenantId and ConnectionString are required.");
@@ -62,7 +61,11 @@ namespace Orchard.TenantManagement.Controllers
                 settings: tenant.GetSettingsDictionary()
             );
 
-            await _migrationRunner.RunMigrationsForTenantAsync(tenantContext);
+            var taskId = await _provisioning.EnqueueProvisionAsync(tenantContext, new ProvisionOptions());
+
+            return Accepted(new { TaskId = taskId });
+
+            //await _migrationRunner.RunMigrationsForTenantAsync(tenantContext);
 
             // execute recipe if provided
             //if (!string.IsNullOrWhiteSpace(dto.RecipeName) && _recipeExecutor != null)
@@ -71,7 +74,7 @@ namespace Orchard.TenantManagement.Controllers
             //    await _recipeExecutor.ExecuteRecipeAsync(dto.RecipeName, tenantContext);
             //}
 
-            return CreatedAtAction(nameof(GetTenant), new { id = tenant.TenantId }, tenant);
+            //return CreatedAtAction(nameof(GetTenant), new { id = tenant.TenantId }, tenant);
         }
 
         [HttpGet]

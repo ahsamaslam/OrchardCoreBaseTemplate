@@ -1,55 +1,55 @@
-﻿using Orchard.ModuleBase;
+﻿using Microsoft.Extensions.Options;
+using Orchard.ModuleBase;
 
 namespace OrchardApp.Host
 {
-    internal class HostMigrationsHostedService : IHostedService
+    public class HostMigrationsHostedService : IHostedService
     {
+        private readonly IHostApplicationLifetime _lifetime;
+        private readonly IServiceProvider _sp;
+
         private readonly ILogger<HostMigrationsHostedService> _logger;
         private readonly IMigrationRunnerService _runner;
-        private readonly Microsoft.Extensions.Options.IOptions<ModuleRegistryOptions> _moduleRegistry;
-        private readonly string _hostConnectionString;
+        private readonly IOptions<ModuleRegistryOptions> _moduleRegistry;
 
         public HostMigrationsHostedService(
+            IHostApplicationLifetime lifetime,
+            IServiceProvider sp,
             ILogger<HostMigrationsHostedService> logger,
             IMigrationRunnerService runner,
-            Microsoft.Extensions.Options.IOptions<ModuleRegistryOptions> moduleRegistry,
-            string hostConnectionString)
+            IOptions<ModuleRegistryOptions> moduleRegistry)
         {
+            _lifetime = lifetime;
+            _sp = sp;
             _logger = logger;
             _runner = runner;
             _moduleRegistry = moduleRegistry;
-            _hostConnectionString = hostConnectionString;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            // Run host-level migrations for each registered module assembly
-            var assemblies = _moduleRegistry.Value.MigrationAssemblies;
-            if (assemblies == null || assemblies.Count == 0)
+            _lifetime.ApplicationStarted.Register(() =>
             {
-                _logger.LogInformation("No module migration assemblies registered — skipping host migrations.");
-                return;
-            }
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        using var scope = _sp.CreateScope();
+                        _logger.LogInformation("ApplicationStarted (hosted) - found {N} migration assemblies", _moduleRegistry.Value.MigrationAssemblies.Count);
 
-            _logger.LogInformation("Starting host migrations for {Count} assemblies", assemblies.Count);
-            foreach (var asm in assemblies)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                try
-                {
-                    _logger.LogInformation("Running migrations for assembly {Assembly}", asm.FullName);
-                    await _runner.RunMigrationsAsync(_hostConnectionString, asm);
-                    _logger.LogInformation("Completed migrations for assembly {Assembly}", asm.FullName);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Failed to run migrations for assembly {Assembly}", asm.FullName);
-                    // Decide whether to rethrow or continue. Rethrow will prevent app from starting.
-                    throw;
-                }
-            }
+                        // run migrations/provisioning as above
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Post-start operations failed");
+                    }
+                });
+            });
+
+            await Task.CompletedTask;
         }
 
         public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
     }
 }

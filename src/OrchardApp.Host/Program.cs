@@ -1,15 +1,18 @@
 // Program.cs (Host)
 // ------------------------------------------------------
 
-using System.Reflection;
-using System.Runtime.Loader;
 using LinqToDB.Data;
 using Microsoft.Extensions.Options;
 using Orchard.ModuleBase;
+using Orchard.ModuleBase.Tenant;
 using Orchard.TenantManagement.Services;
+using OrchardApp.Host;
+using OrchardApp.Host.Contracts.Provisioning;
 using OrchardApp.Host.Database;
 using OrchardApp.Host.Infrastructure.Settings;
 using OrchardApp.Host.Tenants;
+using System.Reflection;
+using System.Runtime.Loader;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -39,70 +42,81 @@ builder.Services.AddSingleton<ITenantScopedFactory<DataConnection>, TenantLinq2D
 // Host-level settings store
 builder.Services.AddSingleton<ISettingsStore, HostSettingsStore>();
 
-// Migration runner (Host-side implementation)
-builder.Services.AddSingleton<IMigrationRunnerService, MigrationRunnerService>();
+
 
 // ============================================================================
 // 2. MODULE BOOTSTRAP: Load modules + execute ConfigureModuleServices()
 //    BEFORE we register things like ITenantStore or run any migrations.
 // ============================================================================
-//BootstrapModuleServicesVerbose(builder.Services);
+BootstrapModuleServicesVerbose(builder.Services);
 
 // ============================================================================
 // 3. Register services that depend on module-registered services
 // ============================================================================
 builder.Services.AddScoped<ITenantRepository, TenantRepository>();
-builder.Services.AddScoped<ITenantStore, InMemoryTenantStore>();
+builder.Services.AddScoped<ITenantStore, HostTenantStoreAdapter>();
+
+// Migration runner (Host-side implementation)
+builder.Services.AddSingleton<IMigrationRunnerService, MigrationRunnerService>();
+
+
+builder.Services.AddSingleton<IProvisionQueue, InMemoryProvisionQueue>();
+builder.Services.AddScoped<ITenantProvisioningService, TenantProvisioningService>();
+builder.Services.AddSingleton<ITenantDatabaseCreator, SqlServerTenantDatabaseCreator>();
+builder.Services.AddHostedService<TenantProvisioningHostedService>();
+builder.Services.AddSingleton<IProvisioningStatusStore, ProvisioningStatusStore>();
+
 
 // Orchard
-builder.Services.AddOrchardCore();
+builder.Services.AddOrchardCore().WithTenants();
 
 var app = builder.Build();
+app.UseRouting();
 
-if (app.Environment.IsDevelopment())
-{
-    using var scope = app.Services.CreateScope();
-    var tenantStore = scope.ServiceProvider.GetRequiredService<ITenantStore>();
-    var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+//if (app.Environment.IsDevelopment())
+//{
+//    using var scope = app.Services.CreateScope();
+//    var tenantStore = scope.ServiceProvider.GetRequiredService<ITenantStore>();
+//    var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
 
-    // Read connection strings from appsettings (fall back to Host if Tenant1 is missing)
-    var hostConn = config.GetConnectionString("Host");
-    var tenant1Conn = config.GetConnectionString("Tenant1") ?? hostConn;
+//    // Read connection strings from appsettings (fall back to Host if Tenant1 is missing)
+//    var hostConn = config.GetConnectionString("Host");
+//    var tenant1Conn = config.GetConnectionString("Tenant1") ?? hostConn;
 
-    // Sanity checks and logging
-    var logger = scope.ServiceProvider.GetService<ILoggerFactory>()?.CreateLogger("TenantSeed");
-    logger?.LogInformation("Seeding tenants (Dev). HostConn: {HostConnPresent}, Tenant1Conn: {Tenant1ConnPresent}",
-        !string.IsNullOrEmpty(hostConn), !string.IsNullOrEmpty(tenant1Conn));
+//    // Sanity checks and logging
+//    var logger = scope.ServiceProvider.GetService<ILoggerFactory>()?.CreateLogger("TenantSeed");
+//    logger?.LogInformation("Seeding tenants (Dev). HostConn: {HostConnPresent}, Tenant1Conn: {Tenant1ConnPresent}",
+//        !string.IsNullOrEmpty(hostConn), !string.IsNullOrEmpty(tenant1Conn));
 
-    // Tenant #1: uses host connection (example: admin / host DB)
-    var tenantA = new TenantContext(
-        tenantId: "t1",
-        tenantName: "tenant.local",                 // used as host key by default
-        connectionString: hostConn,
-        settings: new Dictionary<string, string>
-        {
-            // register hostnames to resolve this tenant in TenantResolutionMiddleware
-            // For local testing, map these names in your hosts file (e.g. 127.0.0.1 tenant.local)
-            { "Hosts", "tenant.local,localhost,127.0.0.1" }
-        });
+//    // Tenant #1: uses host connection (example: admin / host DB)
+//    var tenantA = new TenantContext(
+//        tenantId: "t1",
+//        tenantName: "tenant.local",                 // used as host key by default
+//        connectionString: hostConn,
+//        settings: new Dictionary<string, string>
+//        {
+//            // register hostnames to resolve this tenant in TenantResolutionMiddleware
+//            // For local testing, map these names in your hosts file (e.g. 127.0.0.1 tenant.local)
+//            { "Hosts", "tenant.local,localhost,127.0.0.1" }
+//        });
 
-    await tenantStore.AddTenantAsync(tenantA);
-    logger?.LogInformation("Added tenant {Id} -> hosts {Hosts}", tenantA.TenantId, tenantA.Settings?["Hosts"]);
+//    await tenantStore.AddTenantAsync(tenantA);
+//    logger?.LogInformation("Added tenant {Id} -> hosts {Hosts}", tenantA.TenantId, tenantA.Settings?["Hosts"]);
 
-    // Tenant #2: uses Tenant1 connection string (separate DB)
-    var tenantB = new TenantContext(
-        tenantId: "t2",
-        tenantName: "tenant.tenant1",
-        connectionString: tenant1Conn,
-        settings: new Dictionary<string, string>
-        {
-            // Example hosts — add mapping in hosts file for local testing
-            { "Hosts", "tenant.tenant1,tenant1.local" }
-        });
+//    // Tenant #2: uses Tenant1 connection string (separate DB)
+//    var tenantB = new TenantContext(
+//        tenantId: "t2",
+//        tenantName: "tenant.tenant1",
+//        connectionString: tenant1Conn,
+//        settings: new Dictionary<string, string>
+//        {
+//            // Example hosts — add mapping in hosts file for local testing
+//            { "Hosts", "tenant.tenant1,tenant1.local" }
+//        });
 
-    await tenantStore.AddTenantAsync(tenantB);
-    logger?.LogInformation("Added tenant {Id} -> hosts {Hosts}", tenantB.TenantId, tenantB.Settings?["Hosts"]);
-}
+//    await tenantStore.AddTenantAsync(tenantB);
+//    logger?.LogInformation("Added tenant {Id} -> hosts {Hosts}", tenantB.TenantId, tenantB.Settings?["Hosts"]);
+//}
 
 // ============================================================================
 // 4. Run Host migrations BEFORE ANY middleware that touches ITenantStore
@@ -115,7 +129,34 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<TenantResolutionMiddleware>();
 
 // ---------------- Debug endpoints -------------------
+app.MapGet("/_diag-assemblies", () =>
+{
+    var assemblies = AppDomain.CurrentDomain.GetAssemblies()
+                        .Where(a => !a.IsDynamic)
+                        .Select(a => new { Name = a.GetName().Name, FullName = a.FullName, Location = a.Location })
+                        .ToList();
 
+    var dupNames = assemblies
+        .GroupBy(a => a.Name)
+        .Where(g => g.Count() > 1)
+        .ToDictionary(g => g.Key, g => g.Select(x => x.Location).ToList());
+
+    return Results.Json(new { Count = assemblies.Count, Assemblies = assemblies, Duplicates = dupNames });
+});
+
+// dump ApplicationParts and controller/action descriptors
+//app.MapGet("/_diag-mvc", (IServiceProvider sp) =>
+//{
+//    var apm = sp.GetRequiredService<ApplicationPartManager>();
+//    var parts = apm.ApplicationParts.Select(p => new { p.Name, Kind = p.GetType().Name }).ToList();
+
+//    var adp = sp.GetService<Microsoft.AspNetCore.Mvc.Infrastructure.IActionDescriptorCollectionProvider>();
+//    var actions = adp?.ActionDescriptors.Items
+//        .Select(a => new { a.DisplayName, RouteValues = a.RouteValues })
+//        .ToList() ?? new List<object>();
+
+//    return Results.Json(new { ApplicationParts = parts, ActionCount = actions.Count, Actions = actions.Take(250) }); // limit to 250
+//});
 app.MapGet("/_migration-debug", (IOptions<ModuleRegistryOptions> opts) =>
 {
     var assemblies = opts.Value.MigrationAssemblies.Select(a => a.FullName).ToList();
@@ -149,6 +190,56 @@ app.MapPost("/_run-host-migrations", async (IMigrationRunnerService runner, ICon
 });
 // Orchard pipeline
 app.UseOrchardCore();
+
+app.Lifetime.ApplicationStarted.Register(() =>
+{
+    // Run async but don't block ApplicationStarted registration
+    _ = Task.Run(async () =>
+    {
+        try
+        {
+            using var scope = app.Services.CreateScope();
+            var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("PostStart");
+            logger.LogInformation("ApplicationStarted callback executing post-start tasks...");
+
+            var opts = scope.ServiceProvider.GetRequiredService<IOptions<ModuleRegistryOptions>>();
+            logger.LogInformation("Migration assemblies found: {Count}", opts.Value.MigrationAssemblies.Count);
+
+            if (opts.Value.MigrationAssemblies.Count > 0)
+            {
+                var runner = scope.ServiceProvider.GetRequiredService<IMigrationRunnerService>();
+                var cfg = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+                var hostConn = cfg.GetConnectionString("Host") ?? throw new InvalidOperationException("Host connection string missing");
+
+                foreach (var asm in opts.Value.MigrationAssemblies)
+                {
+                    try
+                    {
+                        logger.LogInformation("Running host migrations for assembly {Name}", asm.GetName().Name);
+                        await runner.RunMigrationsAsync(hostConn, asm);
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(ex, "Migration failed for {Name}", asm.GetName().Name);
+                        // do not rethrow — failing here would crash the host at startup
+                    }
+                }
+            }
+
+            // call provisioning / recipe executor as needed
+            // var provisioning = scope.ServiceProvider.GetRequiredService<ITenantProvisioningService>();
+            // await provisioning.RunPendingProvisioningAsync();
+
+            logger.LogInformation("ApplicationStarted callback finished.");
+        }
+        catch (Exception ex)
+        {
+            // Last-resort logging — do not crash host
+            var lf = app.Services.GetService<ILoggerFactory>();
+            lf?.CreateLogger("PostStart")?.LogError(ex, "ApplicationStarted callback fatal error");
+        }
+    });
+});
 app.Run();
 
 
@@ -157,7 +248,7 @@ app.Run();
 // ============================================================================
 void BootstrapModuleServicesVerbose(IServiceCollection services)
 {
-    var moduleStartupType = typeof(Orchard.ModuleBase.ModuleStartupBase);
+    var moduleStartupType = typeof(ModuleStartupBase);
 
     Console.WriteLine("[Bootstrap] AppContext.BaseDirectory: " + AppContext.BaseDirectory);
 

@@ -1,5 +1,6 @@
 ﻿
 using Microsoft.AspNetCore.Authentication;
+using Orchard.ModuleBase.Tenant;
 
 namespace Orchard.ModuleBase
 {
